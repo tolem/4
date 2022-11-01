@@ -1,5 +1,10 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
-    TODO
+TODO {{ user.username }}
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/index.js' %}"> </script>
 {% endblock %}
