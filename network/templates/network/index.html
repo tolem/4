@@ -2,7 +2,20 @@
 {% load static %}
 
 {% block body %}
-TODO {{ user.username }}
+<div>
+<h3>New Post</h3>
+<div id="New_form"> 
+        <form>
+        {% csrf_token %}
+        
+    </form>
+</div>
+<div>
+    TODO {{ user.username }}
+</div>
+</div>
+
+
 {% endblock %}
 
 {% block script %}
