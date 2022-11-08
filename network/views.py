@@ -6,18 +6,19 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import JsonResponse
-from .models import User, UserPost
+from .models import User, UserPost, Following
 from .forms import *
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.core import serializers
+
 
 def index(request):
     _users = User.objects.all()
     postform = UserPost.objects.all()
     print(postform, _users)
     # double check to make sure its an instance of same user
-    return render(request, "network/index.html",{ 
-        'post' : postform
-        })
+    return render(request, "network/index.html",)
 
 
 def login_view(request):
@@ -27,6 +28,7 @@ def login_view(request):
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
+        print(user)
 
         # Check if authentication successful
         if user is not None:
@@ -72,56 +74,48 @@ def register(request):
         return render(request, "network/register.html")
 
 
+@csrf_exempt
 @login_required
-def compose(request):
-
-    # Composing a new email must be via POST
+def commit_posts(request):
+    # Composing a new post must be via POST
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
-
-    # Check recipient emails
+    # gets content from posts
     data = json.loads(request.body)
-    emails = [email.strip() for email in data.get("recipients").split(",")]
-    if emails == [""]:
-        return JsonResponse({
-            "error": "At least one recipient required."
-        }, status=400)
+    content = data.get("message", "")
+    try:
+        _user = request.user
+        post = UserPost(
+                author=_user,
+                content=content,
+                )
+        post.save()
+    except IntegrityError:
+        return JsonResponse({'message: intergrity error raised check to see your are logged in'})
 
-    # Convert email addresses to users
-    recipients = []
-    for email in emails:
-        try:
-            user = User.objects.get(email=email)
-            recipients.append(user)
-        except User.DoesNotExist:
-            return JsonResponse({
-                "error": f"User with email {email} does not exist."
-            }, status=400)
-
-    # Get contents of email
-    subject = data.get("subject", "")
-    body = data.get("body", "")
-
-    # Create one email for each recipient, plus sender
-    users = set()
-    users.add(request.user)
-    users.update(recipients)
-    for user in users:
-        email = Email(
-            user=user,
-            sender=request.user,
-            subject=subject,
-            body=body,
-            read=user == request.user
-        )
-        email.save()
-        for recipient in recipients:
-            email.recipients.add(recipient)
-        email.save()
-    print('email is sent, Lami')
-
+    print('post is sent, Lami')
     return JsonResponse({"message": "Email sent successfully."}, status=201)
 
+
+@login_required
+def show_posts(request, userpost):
+    # Filter emails returned based on mailbox
+    if userpost == "all":
+        posts = UserPost.objects.all()
+    elif mailbox == "following":
+        posts = Following.objects.filter(
+            user=request.user
+        )
+
+    else:
+        return JsonResponse({"error": "Invalid mailbox."}, status=400)
+
+    # Return posts in reverse chronologial order
+    posts = posts.order_by("-timestamps").all()
+    print(posts)
+    # return HttpResponse(posts)
+    
+    return JsonResponse([serializers.serialize("json",post) for post in posts], safe=False)
 
 
 @login_required

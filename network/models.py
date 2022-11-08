@@ -3,7 +3,8 @@ from django.db import models
 
 
 class User(AbstractUser):
-    pass
+    def __str__(self):
+        return f'{self.username}'
 
 
 class Following(models.Model):
@@ -11,8 +12,9 @@ class Following(models.Model):
     follower = models.ManyToManyField(User, blank=True, related_name="follower")
 
     def __str__(self):
-     
-        return f'{self.user}'
+        num = sum([True for n in self.follower.all()])
+        follow = [name for name in self.follower.all()]
+        return f'{self.user} has {num} followers they are: {follow}'
 
 
 class UserPost(models.Model):
@@ -22,8 +24,21 @@ class UserPost(models.Model):
     like = models.BooleanField(default=False)
     likes =  models.IntegerField(default=0)
 
+
     def clean(self):
         pass
 
+
+    def serialize(self):
+        return {
+            "author": self.author,
+            "content": self.content,
+            "timestamps": self.timestamps.strftime("%b %d %Y, %I:%M %p"),
+            "like": self.like,
+            "self": self.likes,
+        }
+
     def __str__(self):
-        return self.author
+        return f'{self.author} created post on  {self.timestamps}'
+
+

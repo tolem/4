@@ -1,5 +1,18 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-<h1>Following </h1>
+<h1>Following {{ user.pk }} </h1>
+<div id="posts-section">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title"> {{ user.username }}</h5>
+        <a href="#" class="card-link"> Edit </a>
+        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+        <a href="#" class="card-link">TODO</a>
+      </div>
+    </div>
+</div>
+
 {% endblock %}
+
+

@@ -9,12 +9,12 @@
 {% if user.is_authenticated %}
 <div id="post-form" class="card">
     <form id="new-post" class="card-body">
-        {% csrf_token %}
+          {% csrf_token %}
           <div class="form-group">
             <label for="PostBox" id="card-title"><h3>New Post</h3></label>
             <textarea class="form-control" id="PostBox"></textarea>
             <br/>
-        <div  style="width: 200px;">
+        <div  style="width: 12.5em;">
             <input class="btn btn-primary btn-lg" id="post-btn" style="justify-content: flex-start;" type="submit" value="Post">
         </div>
         </div>
@@ -22,17 +22,21 @@
     </form>
 </div>
 {% endif %}
-<div>
-    
-<div class="card" style="width: 18rem;">
-  <div class="card-body">
-    <h5 class="card-title"> {{ user.username }}</h5>
-    <a href="#" class="card-link"> Edit </a>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-    <a href="#" class="card-link">TODO</a>
-  </div>
+<br/>
+
+<div id="posts-section">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title"> {{ user.username }}</h5>
+        <a href="#" class="card-link"> Edit </a>
+        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+        <a href="#" class="card-link">TODO</a>
+      </div>
+    </div>
 </div>
-</div>
+
+<br/>
+
 
 {% endblock %}
 
