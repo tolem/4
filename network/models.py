@@ -8,8 +8,8 @@ class User(AbstractUser):
 
 
 class Following(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user", null=False)
-    follower = models.ManyToManyField(User, blank=True, related_name="follower")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followed", null=False)
+    follower = models.ManyToManyField(User, blank=True, related_name="followings")
 
     def __str__(self):
         num = sum([True for n in self.follower.all()])
@@ -18,7 +18,7 @@ class Following(models.Model):
 
 
 class UserPost(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author", null=False)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userposts", null=False)
     content = models.TextField(verbose_name="Post", default="", max_length=2048, null=False)
     timestamps = models.DateTimeField(auto_now_add=True)
     like = models.BooleanField(default=False)
@@ -31,7 +31,8 @@ class UserPost(models.Model):
 
     def serialize(self):
         return {
-            "author": self.author,
+            "id": self.id,
+            "author": self.author.username,
             "content": self.content,
             "timestamps": self.timestamps.strftime("%b %d %Y, %I:%M %p"),
             "like": self.like,

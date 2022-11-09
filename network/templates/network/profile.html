@@ -1,5 +1,5 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-<h1> {{ user.username }}  Profile </h1>
+<h1> {{ user.username }}  Profile {{ request.user.pk }}</h1>
 {% endblock %}

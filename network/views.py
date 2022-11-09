@@ -10,7 +10,7 @@ from .models import User, UserPost, Following
 from .forms import *
 import json
 from django.views.decorators.csrf import csrf_exempt
-from django.core import serializers
+
 
 
 def index(request):
@@ -100,22 +100,34 @@ def commit_posts(request):
 @login_required
 def show_posts(request, userpost):
     # Filter emails returned based on mailbox
-    if userpost == "all":
+    if userpost.lower() == "all":
         posts = UserPost.objects.all()
-    elif mailbox == "following":
-        posts = Following.objects.filter(
-            user=request.user
-        )
+    elif userpost.lower() == "following":
+        _user = User.objects.get(pk=request.user.pk)
+        followings = _user.followings.all()
+        _followed = _user.followed.all()
+        for f in followings:
+            print(f.user)
+        print(followings, 'followeds')
+        print(_followed, 'followers')
+        pts = UserPost.objects.all()
+        for u in pts:
+            print(u.author.posts)
+        print(pts)
+   
+     
+    
+        return HttpResponse(followings)
+
 
     else:
-        return JsonResponse({"error": "Invalid mailbox."}, status=400)
+        return JsonResponse({"error": "Invalid posts."}, status=400)
 
     # Return posts in reverse chronologial order
     posts = posts.order_by("-timestamps").all()
-    print(posts)
-    # return HttpResponse(posts)
-    
-    return JsonResponse([serializers.serialize("json",post) for post in posts], safe=False)
+    print([post.serialize() for post in posts])
+    return JsonResponse([post.serialize() for post in posts], safe=False)
+
 
 
 @login_required

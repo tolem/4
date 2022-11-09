@@ -25,13 +25,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	// By default, load all posts
 	load_posts('all');
 
+
 });
 
 
 
 
 function post_msg(event){
-	document.querySelector('#submit').disabled = true;
+		
 	event.preventDefault()
 	// alert('Hello')
 	let content =  document.querySelector('#PostBox').value;
@@ -49,7 +50,9 @@ function post_msg(event){
 	      // Print result
 	      console.log(result);
 	      document.querySelector('#PostBox').value = '';
-          document.querySelector('#submit').disabled = true;
+	      document.querySelector('#post-btn').disabled = true;
+
+         
 	    
 	      
 	  });

@@ -9,7 +9,7 @@
 {% if user.is_authenticated %}
 <div id="post-form" class="card">
     <form id="new-post" class="card-body">
-          {% csrf_token %}
+         
           <div class="form-group">
             <label for="PostBox" id="card-title"><h3>New Post</h3></label>
             <textarea class="form-control" id="PostBox"></textarea>
