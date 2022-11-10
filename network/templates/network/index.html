@@ -9,7 +9,6 @@
 {% if user.is_authenticated %}
 <div id="post-form" class="card">
     <form id="new-post" class="card-body">
-         
           <div class="form-group">
             <label for="PostBox" id="card-title"><h3>New Post</h3></label>
             <textarea class="form-control" id="PostBox"></textarea>
@@ -25,14 +24,6 @@
 <br/>
 
 <div id="posts-section">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title"> {{ user.username }}</h5>
-        <a href="#" class="card-link"> Edit </a>
-        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-        <a href="#" class="card-link">TODO</a>
-      </div>
-    </div>
 </div>
 
 <br/>
@@ -44,12 +35,3 @@
     <script src="{% static 'network/index.js' %}"> </script>
 {% endblock %}
 
-<!-- <div class="card" style="width: 18rem;">
-  <div class="card-body">
-    <h5 class="card-title">Card title</h5>
-    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-    <a href="#" class="card-link">Card link</a>
-    <a href="#" class="card-link">Another link</a>
-  </div>
-</div> -->

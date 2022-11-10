@@ -4,4 +4,18 @@ textarea {
 
 }
 
-/*#PostForm{}*/
+
+.card{
+    margin-bottom: 1.5em;
+}
+
+
+
+span ion-icon {
+    font-size: 1.5rem;
+    color: red;
+}
+
+span ion-icon:hover {
+  cursor: pointer;
+}

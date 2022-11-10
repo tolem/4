@@ -10,6 +10,7 @@ from .models import User, UserPost, Following
 from .forms import *
 import json
 from django.views.decorators.csrf import csrf_exempt
+from itertools import chain
 
 
 
@@ -97,42 +98,57 @@ def commit_posts(request):
     return JsonResponse({"message": "Email sent successfully."}, status=201)
 
 
-@login_required
-def show_posts(request, userpost):
+
+def show_posts(request):
     # Filter emails returned based on mailbox
-    if userpost.lower() == "all":
-        posts = UserPost.objects.all()
-    elif userpost.lower() == "following":
-        _user = User.objects.get(pk=request.user.pk)
-        followings = _user.followings.all()
-        _followed = _user.followed.all()
-        for f in followings:
-            print(f.user)
-        print(followings, 'followeds')
-        print(_followed, 'followers')
-        pts = UserPost.objects.all()
-        for u in pts:
-            print(u.author.posts)
-        print(pts)
-   
-     
+ 
+    posts = UserPost.objects.all()
+    if posts:
+        pass
+
+    # elif userpost.lower() == "following":
+    #     _user = User.objects.get(pk=request.user.pk)
+    #     # followings = _user.followings.all()
+    #     # _followed = _user.followed.all()
+    #     # for f in followings:
+    #     #     print(f.user)
+    #     # print(followings, 'followeds')
+    #     # print(_followed, 'followers')
+    #     # pts = UserPost.objects.all()
+    #     # for u in pts:
+    #     #     print(u.author.userposts)
+    #     # print(pts)
+    #     return JsonResponse(_user.posts, safe=False)
     
-        return HttpResponse(followings)
-
-
+    #     # return HttpResponse(followings)
     else:
         return JsonResponse({"error": "Invalid posts."}, status=400)
 
     # Return posts in reverse chronologial order
     posts = posts.order_by("-timestamps").all()
-    print([post.serialize() for post in posts])
+    # print([post.serialize() for post in posts])
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
 
 @login_required
-def user_following(request):
-    return render(request, 'network/following.html')
+def show_followings(request):
+    _user = request.user
+
+    followed = _user.followings.all()
+    followings_list = set()
+
+    for follow in followed:
+        print(follow.user, follow.user.userposts.all())
+        if follow is not None:
+            followings_list.add(follow.user.userposts.all())
+
+    # print("followings:",request.user.userposts.all())
+    print(followings_list)
+    followings_list = list(chain(followings_list))
+    print(followings_list)
+
+    return HttpResponse(request.user)
 
 
 @login_required

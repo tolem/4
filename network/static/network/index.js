@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	if (text_field !== null) {
 			text_field.onkeyup = () => {
-                    if (document.querySelector('#PostBox').value.length > 0)
+                    if (document.querySelector('#PostBox').value.trim().length > 0)
                         document.querySelector('#post-btn').disabled = false;
                     else
                         document.querySelector('#post-btn').disabled = true;
@@ -31,41 +31,76 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-function post_msg(event){
-		
-	event.preventDefault()
-	// alert('Hello')
-	let content =  document.querySelector('#PostBox').value;
-	console.log('Lami', 'TODO', content);
-  
 
-	fetch('/posts', {
-	    method: 'POST',
-	    body: JSON.stringify({
-	        message: content
-	    })
-	  })
-	  .then(response => response.json())
-	  .then(result => {
-	      // Print result
-	      console.log(result);
-	      document.querySelector('#PostBox').value = '';
-	      document.querySelector('#post-btn').disabled = true;
-
-         
-	    
-	      
-	  });
-
-	  return 
-}
 
 
 
 function view_post(query){
+	container = document.querySelector('#posts-section');
 	fetch(`/posts/${query}`).then(
 		response => response.json()).then(
-		posts => console.log(posts)
+		posts => {console.log(posts)
+			posts.forEach( post => { 
+			const parentDiv = document.createElement('div');
+           	const innerDiv =  document.createElement('div');
+           	const header = document.createElement('h5');
+           	const link = document.createElement('a');
+           	const postContent = document.createElement('p');
+           	const comment = document.createElement('span');
+           	const delimiter = document.createElement('br');
+           	const btn = document.createElement('span');
+
+
+           // const archive_btn = document.createElement('button');
+
+           parentDiv.classList.add("card");
+           innerDiv.classList.add("card-body");
+           header.classList.add('card-title');
+           link.classList.add("card-link");
+           postContent.classList.add('card-text');
+
+           header.innerHTML = post.author;
+           link.innerHTML = 'Edit';
+           postContent.innerHTML = `${post.content} <br/> <span style=color:grey;> ${post.timestamps}</span> <br/>`
+           btn.innerHTML = `<ion-icon name="heart"></ion-icon> `
+           comment.innerHTML = `${post.self} <br/> Comment`
+          
+
+     		innerDiv.appendChild(header);
+     		innerDiv.appendChild(link);
+     		innerDiv.appendChild(postContent);
+     		innerDiv.appendChild(btn);
+     		innerDiv.appendChild(comment);
+     		innerDiv.appendChild(delimiter);
+     		parentDiv.appendChild(innerDiv);
+            container.appendChild(parentDiv);
+
+
+
+           link.addEventListener('click', function() {
+           	// creates form field
+           	const formDiv = document.createElement('form');
+           	formDiv.id = post.id;
+           	const editPost = document.createElement('textArea');
+           	const submitPost = document.createElement('input');
+          
+
+          console.log(`${post.id} `+ 'of this element has been clicked!')
+
+       
+
+});
+
+
+
+
+
+
+       }
+
+
+				);
+		}
 		);
 }
 
@@ -83,11 +118,9 @@ function load_posts(userposts) {
   // }
 
   // Show the mailbox name
-  document.querySelector('#posts-section').innerHTML = `<h3>${userposts.charAt(0).toUpperCase() + userposts.slice(1)}</h3>`;
+  // document.querySelector('#posts-section').innerHTML = `<h3>${userposts.charAt(0).toUpperCase() + userposts.slice(1)}</h3>`;
 
   // Show all posts
-  // view_emails(mailbox); 
-
   view_post(userposts)
 
   return 
@@ -124,3 +157,33 @@ function load_posts(userposts) {
 //         }
 //     })
 // });
+
+function post_msg(event){
+		
+	event.preventDefault()
+	// alert('Hello')
+	let content =  document.querySelector('#PostBox').value;
+	console.log('Lami', 'TODO', content);
+  
+
+	fetch('/posts', {
+	    method: 'POST',
+	    body: JSON.stringify({
+	        message: content
+	    })
+	  })
+	  .then(response => response.json())
+	  .then(result => {
+	      // Print result
+	      console.log(result);
+	      document.querySelector('#PostBox').value = '';
+	      document.querySelector('#post-btn').disabled = true;
+
+	     
+         	    
+	      
+	  });
+	  load_posts('all');
+
+	  return 
+}
