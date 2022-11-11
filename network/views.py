@@ -11,6 +11,7 @@ from .forms import *
 import json
 from django.views.decorators.csrf import csrf_exempt
 from itertools import chain
+from django.views.generic import ListView
 
 
 
@@ -126,6 +127,7 @@ def show_posts(request):
 
     # Return posts in reverse chronologial order
     posts = posts.order_by("-timestamps").all()
+    print(posts)
     # print([post.serialize() for post in posts])
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
@@ -133,24 +135,62 @@ def show_posts(request):
 
 @login_required
 def show_followings(request):
-    _user = request.user
+    try:
+        _user = request.user
+        followed = _user.followings.all()
+        followings_list = set()
 
-    followed = _user.followings.all()
-    followings_list = set()
+        for follow in followed:
+            # print(follow.user, follow.user.userposts.all())
+            if len(follow.user.userposts.all()) > 0:
+                # print(len(follow.user.userposts.all()))
+                followings_list.add(follow.user.userposts.all())
 
-    for follow in followed:
-        print(follow.user, follow.user.userposts.all())
-        if follow is not None:
-            followings_list.add(follow.user.userposts.all())
+        sortedlist = list(followings_list.copy())
+        sortedusers =  sortedlist[0]
+        sortedusers = sortedusers.union(*sortedlist).order_by("-timestamps").all()
+        print(sortedusers)
+        return JsonResponse([post.serialize() for post in sortedusers], safe=False)
 
-    # print("followings:",request.user.userposts.all())
-    print(followings_list)
-    followings_list = list(chain(followings_list))
-    print(followings_list)
-
-    return HttpResponse(request.user)
+    except User.DoesNotExist:
+        return HttpResponseBadRequest("Bad Request: user does not exist")
 
 
-@login_required
-def user_profile(request):
-    return render(request, 'network/profile.html')
+def user_profile(request, profile_name):
+    profiler = User.objects.get(username=profile_name)
+    profile_posts = profiler.userposts.all()
+    profile_posts = profile_posts.order_by("-timestamps").all()
+    profile_posts = [post.serialize() for post in profile_posts]
+    # followed = profiler.followed.all()
+    # followers = profiler.followings.all()
+    # print(followers)
+    # num_followed = sum([True for n in followed])
+    # num_followers = sum([True for name in followers])
+    # print(followers, followers.count())
+    # print(num_followers, num_followed, followed, num_followed)
+
+    # for f in followers:
+    #     print(f.user.userposts.all(), 'posts')
+    # print(followed, followers, profile_posts)
+    return render(request, 'network/profile.html', {
+        'profile_users' : profiler, 
+        'posts': profile_posts,
+        'followers': num_followed,
+        # 'followed': num_followers,
+
+
+        })
+
+
+def get_user(request):
+    try:
+        if request.user.pk is not None:
+            return JsonResponse({'id': request.user.pk, 'user': request.user.username.lower()}, safe=False)
+        return JsonResponse({"message": "Bad Request: user does not exist."}, status=201, safe=False)
+
+    except User.DoesNotExist:
+        return HttpResponseRedirect(reverse("index"))
+
+
+def show_profile():
+    pass

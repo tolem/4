@@ -16,6 +16,9 @@ class Following(models.Model):
         follow = [name for name in self.follower.all()]
         return f'{self.user} has {num} followers they are: {follow}'
 
+    def __repr__(self):
+        num = sum([True for n in self.follower.all()])
+        return f'{self.user} has {num} followers'
 
 class UserPost(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userposts", null=False)

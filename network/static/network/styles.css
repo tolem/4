@@ -16,6 +16,6 @@ span ion-icon {
     color: red;
 }
 
-span ion-icon:hover {
+span ion-icon:hover, .card-title:hover {
   cursor: pointer;
 }

@@ -2,7 +2,8 @@ console.log('Hello World!');
 document.addEventListener('DOMContentLoaded', function() {
 	let follow_tag = document.querySelector('#following');
 	follow_tag =  (follow_tag && follow_tag.addEventListener('click', (event) =>  load_posts('following')));
-	document.querySelector('#all').addEventListener('click', () => load_posts('all'));
+	let allPost = document.querySelector('#all');
+	allPost = allPost && allPost.addEventListener('click', () => load_posts('all'));
 	let form_tag = document.querySelector('#post-form');
 	let sub_btn = document.querySelector('#post-btn');
 	sub_btn = (sub_btn && (sub_btn.disabled = true));
@@ -32,52 +33,83 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-
-
 function view_post(query){
-	container = document.querySelector('#posts-section');
+	const container = document.querySelector('#posts-section');
+
 	fetch(`/posts/${query}`).then(
 		response => response.json()).then(
 		posts => {console.log(posts)
 			posts.forEach( post => { 
+		
 			const parentDiv = document.createElement('div');
            	const innerDiv =  document.createElement('div');
            	const header = document.createElement('h5');
-           	const link = document.createElement('a');
-           	const postContent = document.createElement('p');
+           	const editPost = document.createElement('a');
+           	const contentPost = document.createElement('p');
            	const comment = document.createElement('span');
            	const delimiter = document.createElement('br');
            	const btn = document.createElement('span');
+           	const headerLink = document.createElement('a');
+
+
 
 
            // const archive_btn = document.createElement('button');
 
-           parentDiv.classList.add("card");
+           parentDiv.classList.add("card", "post_toggle");
            innerDiv.classList.add("card-body");
            header.classList.add('card-title');
-           link.classList.add("card-link");
-           postContent.classList.add('card-text');
+           editPost.classList.add("card-link", "btn-sm", "btn-primary");
+           contentPost.classList.add('card-text');
 
            header.innerHTML = post.author;
-           link.innerHTML = 'Edit';
-           postContent.innerHTML = `${post.content} <br/> <span style=color:grey;> ${post.timestamps}</span> <br/>`
+           editPost.innerHTML = 'Edit';
+           contentPost.innerHTML = `${post.content} <br/> <span style=color:grey;> ${post.timestamps}</span> <br/>`
            btn.innerHTML = `<ion-icon name="heart"></ion-icon> `
            comment.innerHTML = `${post.self} <br/> Comment`
-          
 
-     		innerDiv.appendChild(header);
-     		innerDiv.appendChild(link);
-     		innerDiv.appendChild(postContent);
+           // console.log(post.author.id, post.author)
+
+
+
+
+           editPost.setAttribute('href', '#');
+           editPost.setAttribute('role', 'button');
+           header.setAttribute('title', `user profile is ${post.author}`);
+           headerLink.setAttribute('href', `http://localhost:8000/profile/${post.author}`);
+           headerLink.style.textDecoration = 'none';
+           headerLink.style.color = '#808080';
+           const authorPost = post.author.toLowerCase();
+           	headerLink.appendChild(header);
+     		innerDiv.appendChild(headerLink);
+
+     		fetch(`/user`).then(
+			response => response.json()).then( profile => {
+			 if ( profile && profile.user === authorPost){
+				headerLink.appendChild(editPost);
+				}
+			else{
+				console.log(profile.message);
+
+
+			}
+			}
+		).catch(err=>console.log(err));
+     	
+           
+     		innerDiv.appendChild(contentPost);
      		innerDiv.appendChild(btn);
      		innerDiv.appendChild(comment);
      		innerDiv.appendChild(delimiter);
      		parentDiv.appendChild(innerDiv);
             container.appendChild(parentDiv);
 
+            
 
 
-           link.addEventListener('click', function() {
+
+
+           editPost.addEventListener('click', function() {
            	// creates form field
            	const formDiv = document.createElement('form');
            	formDiv.id = post.id;
@@ -87,7 +119,8 @@ function view_post(query){
 
           console.log(`${post.id} `+ 'of this element has been clicked!')
 
-       
+          // // open email in new view
+          // open_email(email_id);
 
 });
 
@@ -101,24 +134,34 @@ function view_post(query){
 
 				);
 		}
-		);
+		).catch(err=>console.log(err));
+
 }
 
 
 function load_posts(userposts) {
 	event.preventDefault();
+	const div_isactive = document.querySelectorAll('.post_toggle');
+	// checks if div is DOM and update removes element
+	  if (div_isactive !== null){
+	    console.log(div_isactive);
+	    div_isactive.forEach(posts => posts.remove());
+	  }
 
-  // const div_isactive = document.querySelectorAll('.div_toggle');
+	 if (userposts === "following"){
+	 	document.querySelector("#post-form").style.display = 'none';
+	 }
+	 else{
 
-  // // checks if div is DOM and update removes element
-  // if (div_isactive !== null){
-  //   console.log(div_isactive);
-  //   div_isactive.forEach(msg => msg.remove());
+	 	let userform =  document.querySelector("#post-form");
+	 	userform = userform && (userform.style.display = 'block');
+	 }
 
-  // }
 
-  // Show the mailbox name
-  // document.querySelector('#posts-section').innerHTML = `<h3>${userposts.charAt(0).toUpperCase() + userposts.slice(1)}</h3>`;
+  	// Show title page! 
+	 let title = document.querySelector('#title_page');
+
+  	title = title && (title.innerHTML = `<h1>${userposts.charAt(0).toUpperCase() + userposts.slice(1)} Posts</h1>`);
 
   // Show all posts
   view_post(userposts)
