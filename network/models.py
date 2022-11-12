@@ -9,16 +9,16 @@ class User(AbstractUser):
 
 class Following(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followed", null=False)
-    follower = models.ManyToManyField(User, blank=True, related_name="followings")
+    followers = models.ManyToManyField(User, blank=True, related_name="followings")
 
     def __str__(self):
-        num = sum([True for n in self.follower.all()])
-        follow = [name for name in self.follower.all()]
+        num = sum([True for n in self.followers.all()])
+        follow = [name for name in self.followers.all()]
         return f'{self.user} has {num} followers they are: {follow}'
 
     def __repr__(self):
-        num = sum([True for n in self.follower.all()])
-        return f'{self.user} has {num} followers'
+        num = int(sum([True for n in self.followers.all()]))
+        return f' {num} followers'
 
 class UserPost(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userposts", null=False)

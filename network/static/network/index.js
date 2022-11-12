@@ -38,7 +38,12 @@ function view_post(query){
 
 	fetch(`/posts/${query}`).then(
 		response => response.json()).then(
-		posts => {console.log(posts)
+		posts => {
+			console.log(posts)
+		if (posts.error === "No posts."){
+			container.innerHTML = "No post";
+		} else{
+
 			posts.forEach( post => { 
 		
 			const parentDiv = document.createElement('div');
@@ -133,6 +138,7 @@ function view_post(query){
 
 
 				);
+		}
 		}
 		).catch(err=>console.log(err));
 

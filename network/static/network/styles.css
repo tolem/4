@@ -1,3 +1,6 @@
+*{
+    color: #088080;
+}
 textarea {
     min-height: 6.25em;
     margin: auto;
@@ -19,3 +22,4 @@ span ion-icon {
 span ion-icon:hover, .card-title:hover {
   cursor: pointer;
 }
+

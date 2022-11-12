@@ -147,10 +147,14 @@ def show_followings(request):
                 followings_list.add(follow.user.userposts.all())
 
         sortedlist = list(followings_list.copy())
-        sortedusers =  sortedlist[0]
-        sortedusers = sortedusers.union(*sortedlist).order_by("-timestamps").all()
-        print(sortedusers)
-        return JsonResponse([post.serialize() for post in sortedusers], safe=False)
+        print(sortedlist)
+        if sortedlist:
+            sortedusers =  sortedlist[0]
+            sortedusers = sortedusers.union(*sortedlist).order_by("-timestamps").all()
+            print(sortedusers)
+            return JsonResponse([post.serialize() for post in sortedusers], safe=False)
+
+        return JsonResponse({"error": "No posts."}, status=400)
 
     except User.DoesNotExist:
         return HttpResponseBadRequest("Bad Request: user does not exist")
@@ -158,14 +162,20 @@ def show_followings(request):
 
 def user_profile(request, profile_name):
     profiler = User.objects.get(username=profile_name)
+    print(User._meta.get_fields())
     profile_posts = profiler.userposts.all()
     profile_posts = profile_posts.order_by("-timestamps").all()
     profile_posts = [post.serialize() for post in profile_posts]
-    # followed = profiler.followed.all()
-    # followers = profiler.followings.all()
-    # print(followers)
-    # num_followed = sum([True for n in followed])
-    # num_followers = sum([True for name in followers])
+    followed = profiler.followed.all()
+    followers = profiler.followings.all()
+
+    num_followed = Following.objects.all().filter(followers=profiler.pk)
+    print(num_followed)
+    print((sum([True for n in num_followed])))
+    print(bool(followed))
+    print(Following._meta.get_fields())
+   
+    num_followers = sum([True for name in followers])
     # print(followers, followers.count())
     # print(num_followers, num_followed, followed, num_followed)
 
@@ -175,8 +185,8 @@ def user_profile(request, profile_name):
     return render(request, 'network/profile.html', {
         'profile_users' : profiler, 
         'posts': profile_posts,
-        'followers': num_followed,
-        # 'followed': num_followers,
+        'followers': list(str(followed).split(' '))[2] if followed else "0",
+        'followed': num_followers,
 
 
         })
