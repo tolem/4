@@ -12,6 +12,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from itertools import chain
 from django.views.generic import ListView
+from django.core.paginator import Paginator
 
 
 
@@ -170,25 +171,23 @@ def user_profile(request, profile_name):
     followers = profiler.followings.all()
 
     num_followed = Following.objects.all().filter(followers=profiler.pk)
-    print(num_followed)
-    print((sum([True for n in num_followed])))
-    print(bool(followed))
-    print(Following._meta.get_fields())
-   
-    num_followers = sum([True for name in followers])
-    # print(followers, followers.count())
-    # print(num_followers, num_followed, followed, num_followed)
 
-    # for f in followers:
-    #     print(f.user.userposts.all(), 'posts')
-    # print(followed, followers, profile_posts)
+
+    # print(num_followed)
+    # print((sum([True for n in num_followed])))
+    # print(bool(followed))
+    # print(Following._meta.get_fields())
+
+    num_followers = sum([True for name in followers])
+    paginator = Paginator(profile_posts, 10) # Show 10 post per page.
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    print(page_obj.has_next())
     return render(request, 'network/profile.html', {
         'profile_users' : profiler, 
-        'posts': profile_posts,
+        'posts': page_obj,
         'followers': list(str(followed).split(' '))[2] if followed else "0",
         'followed': num_followers,
-
-
         })
 
 
@@ -204,3 +203,35 @@ def get_user(request):
 
 def show_profile():
     pass
+
+
+
+@csrf_exempt
+@login_required
+def update_post(request, post_id):
+    # Query for requested users
+    try:
+        post = UserPost.objects.get(author=request.user, pk=post_id)
+    except UserPost.DoesNotExist:
+        return JsonResponse({"error": "Post not found."}, status=404)
+
+    # Return post contents
+    if request.method == "GET":
+        return JsonResponse(post.serialize())
+
+    # Update whether post is updated or is liked
+    elif request.method == "PUT":
+        data = json.loads(request.body)
+        if data.get("like") is not None:
+            post.likes = data["like"]
+        if data.get("content") is not None:
+            print("msg")
+            post.content = data["content"]
+        post.save()
+        return HttpResponse(status=204)
+
+    # Post must be via GET or PUT
+    else:
+        return JsonResponse({
+            "error": "GET or PUT request required."
+        }, status=400)

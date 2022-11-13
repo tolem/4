@@ -32,6 +32,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+function send_post(id, content){
+  fetch(`/posts/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+      content: content
+  })
+  
+}).then(console.log('sent to server!')).catch(err=> console.log(err));
+  
+}
+
+
 
 function view_post(query){
 	const container = document.querySelector('#posts-section');
@@ -55,6 +67,7 @@ function view_post(query){
            	const delimiter = document.createElement('br');
            	const btn = document.createElement('span');
            	const headerLink = document.createElement('a');
+           	const timestamp = document.createElement('span');
 
 
 
@@ -69,11 +82,10 @@ function view_post(query){
 
            header.innerHTML = post.author;
            editPost.innerHTML = 'Edit';
-           contentPost.innerHTML = `${post.content} <br/> <span style=color:grey;> ${post.timestamps}</span> <br/>`
-           btn.innerHTML = `<ion-icon name="heart"></ion-icon> `
-           comment.innerHTML = `${post.self} <br/> Comment`
-
-           // console.log(post.author.id, post.author)
+           contentPost.innerHTML = post.content;
+           timestamp.innerHTML = `<br/> <span style=color:grey;> ${post.timestamps}</span> <br/>`
+           btn.innerHTML = `<ion-icon name="heart"></ion-icon>`;
+           comment.innerHTML = ` ${post.self} <br/> Comment`;
 
 
 
@@ -103,26 +115,70 @@ function view_post(query){
      	
            
      		innerDiv.appendChild(contentPost);
+     		innerDiv.appendChild(timestamp);
      		innerDiv.appendChild(btn);
      		innerDiv.appendChild(comment);
      		innerDiv.appendChild(delimiter);
      		parentDiv.appendChild(innerDiv);
             container.appendChild(parentDiv);
 
-            
 
 
+
+
+           
 
 
            editPost.addEventListener('click', function() {
+           	event.preventDefault();
            	// creates form field
-           	const formDiv = document.createElement('form');
-           	formDiv.id = post.id;
-           	const editPost = document.createElement('textArea');
-           	const submitPost = document.createElement('input');
-          
+         	const editForm =  document.createElement('form');
+  			const formBox = document.createElement('textArea');
+  			const spaceBox = document.createElement('br');
+  			const submitForm = document.createElement('button');
+  			const postContent = contentPost.innerHTML;
+  			editPost.style.display = 'none';
+  			formBox.classList.add('form-control');
+  			submitForm.classList.add('btn', 'btn-danger');
 
-          console.log(`${post.id} `+ 'of this element has been clicked!')
+
+  			// adding attribtues to  form 
+  			editForm.setAttribute('method', 'PUT');
+  			submitForm.innerHTML = "commit tweet?";
+  			submitForm.setAttribute('type', 'submit');
+
+
+  			 // prefills form with content 
+  			formBox.value = postContent;
+  			console.log(formBox.value);
+
+  			contentPost.style.display = 'none';
+
+  			 // appending childs element to form elements
+  			editForm.appendChild(formBox);
+  			editForm.appendChild(spaceBox);
+  			editForm.appendChild(submitForm);
+
+  			contentPost.insertAdjacentElement("afterend", editForm);
+  			contentPost.innerHTML = formBox.innerHTML;
+
+
+          // console.log(`${post.id} `+ 'of this element has been clicked!');
+         
+
+  			editForm.onsubmit = () => {
+			    event.preventDefault();
+			      console.log('post updated!')
+			      contentPost.innerHTML = formBox.value;
+			      contentPost.style.display = 'block';
+			       editPost.style.display = 'inline';
+			      editForm.remove();
+			      // send  to server
+			      send_post(post.id, formBox.value);
+
+  }
+  			
+
 
           // // open email in new view
           // open_email(email_id);
@@ -167,7 +223,7 @@ function load_posts(userposts) {
   	// Show title page! 
 	 let title = document.querySelector('#title_page');
 
-  	title = title && (title.innerHTML = `<h1>${userposts.charAt(0).toUpperCase() + userposts.slice(1)} Posts</h1>`);
+  	title = title && (title.innerHTML = `<h1>${userposts.charAt(0).toUpperCase() + userposts.slice(1)} Tweets</h1>`);
 
   // Show all posts
   view_post(userposts)
@@ -235,4 +291,18 @@ function post_msg(event){
 	  load_posts('all');
 
 	  return 
+}
+
+
+
+
+function updatePost(id, addr){
+  fetch(`/posts/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+      archived: !(bol)
+  })
+  
+}).then(() => load_mailbox(addr));
+  
 }

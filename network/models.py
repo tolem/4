@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -10,6 +11,15 @@ class User(AbstractUser):
 class Following(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followed", null=False)
     followers = models.ManyToManyField(User, blank=True, related_name="followings")
+
+
+
+    def clean(self):
+        if self.user and self.followers:
+            if self.followers.count() >= 1:
+                if self.followers.filter(username=self.user.username):
+                    raise ValidationError({'user': (f'{self.user.username}, a user cannot follow themself') },code='error1')
+
 
     def __str__(self):
         num = sum([True for n in self.followers.all()])
@@ -30,7 +40,6 @@ class UserPost(models.Model):
 
     def clean(self):
         pass
-
 
     def serialize(self):
         return {
