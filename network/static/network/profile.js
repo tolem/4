@@ -1,23 +1,123 @@
 document.addEventListener('DOMContentLoaded',() => {
           console.log("content loaded")
-          let editBtn = document.querySelectorAll('.editBtn');
-          // editButton = editBtn && editBtn.addEventListener('click', (btn) => {});
-          // if (editButton !== undefined){
-
+          let editBtn = document.querySelectorAll('.editButton');
+          console.log(editBtn);
             editBtn.forEach(button => {
-                    button.onclick = function() {
-                  console.log(this.dataset.post);
+                  button.onclick = function() {
+                  // console.log(this.dataset.post);
                   const postID = Number(this.dataset.post);
                   button.style.display = 'none';
-                  submitEdit(postID, button)
+                  submitEdit(postID, button);
+                  console.log("Hello");
+                }
 
 
-          }
-        })
+            console.log(document.getElementById(`${button.dataset.post}box`), 'posts');
+            document.getElementById(`${button.dataset.post}box`).addEventListener('click', () => {
+            console.log("tweet was liked");
+            liked_post(button.dataset.post)});
+                
+        });
+
+          document.querySelectorAll('.tweetsdiv').forEach(tweetsbox => {  tweetsbox.onclick = function() {
+             console.log(document.getElementById(`${this.dataset.tweets}box`), 'posts');
+            document.getElementById(`${this.dataset.tweets}box`).addEventListener('click', () => {
+            console.log("tweet was liked", this.dataset.tweets);
+            console.log(document.getElementById(`${this.dataset.tweets}box`).ariaPressed);
+            if (document.getElementById(`${this.dataset.tweets}box`).ariaPressed === "false"){
+                console.log("hello");
+                liked_post(Number(this.dataset.tweets));
+            }
+            else{
+
+              unliked_post(Number(this.dataset.tweets));
+            }
+
+            
+
+
+          })};
+
+          })
           let removeLink = document.getElementById('following');
           removeLink = removeLink && removeLink.remove();
+
+          let followBtn = document.getElementById("followBtn");
+          foll = followBtn && (followBtn.innerHTML = "Follow");
+          console.log(foll);
+          followBtn = followBtn && (followBtn.onclick = function()  {
+            
+
+            console.log(this.dataset.username, this.ariaPressed)
+            if (this.ariaPressed === "true"){
+                this.ariaPressed = "false";
+                this.innerHTML = "Follow";
+        
+            }
+            else{ 
+               
+               this.ariaPressed = "true";
+               this.innerHTML = "Unfollow";
+
+            }
+
+          follow(this.dataset.username, this.innerHTML);
+             
+          })
+
+
+
+
+
 });
 
+
+function follow(username, state){
+  console.log(state);
+  if (state === "Follow"){
+    fetch(`/follow/${username}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+      follow: "username"
+  })
+  
+}).then(() => {
+  fetch(`/follow/${username}`).then( response => response.json()).then(res => {
+    let counter = document.getElementById('countbadge')
+    counter = counter && (counter.innerHTML = res.followers); 
+    let curr_state = document.getElementById("followBtn");
+    // curr_state.ariaPressed = "false";
+    // console.log(!curr_state, 'check', (eval(curr_state)));
+    curr_state.innerHTML = "UnFollow";
+    console.log(res, curr_state.innerHTML); 
+  });
+
+}).catch(err=> console.log(err));
+
+  }
+
+  else if (state === "Unfollow"){
+
+  fetch(`/follow/${username}`, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      Unfollow: "username"
+  })}).then(() => {
+  fetch(`/follow/${username}`).then( response => response.json()).then(res => {
+    let counter = document.getElementById('countbadge')
+    counter = counter && (counter.innerHTML = res.followers); 
+    let curr_state = document.getElementById("followBtn");
+    curr_state.innerHTML = "Follow";
+
+    curr_state.ariaPressed = "true"
+    // console.log(!curr_state, 'check', (eval(curr_state)));
+   console.log(res, curr_state); 
+  });
+
+}).catch(err=> console.log(err));
+
+}
+}
 
 
 function send_post(id, content){
@@ -29,6 +129,31 @@ function send_post(id, content){
   
 }).then(console.log('sent to server!')).catch(err=> console.log(err));
   
+}
+
+
+function liked_post(id){
+  fetch(`/posts/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+      liked : id,
+  })
+  
+}).then(()=> {document.getElementById(`${id}box`).ariaPressed = 'true'}).then(() => fetch(`/posts/${id}`)).then(response => response.json()).then(res => {console.log(res) 
+          document.getElementById(`${id}post`).innerHTML = res.user_likes
+        }).catch(err => console.log(err));
+}
+
+function unliked_post(id){
+  fetch(`/posts/${id}`, {
+  method: 'DELETE',
+  body: JSON.stringify({
+      liked : id,
+  })
+  
+}).then(() => {document.getElementById(`${id}box`).ariaPressed = 'false'}).then(() => fetch(`/posts/${id}`)).then(response => response.json()).then(res => {console.log(res) 
+          document.getElementById(`${id}post`).innerHTML = res.user_likes
+        }).catch(err => console.log(err));  
 }
 
 
@@ -59,7 +184,7 @@ function submitEdit(content_id, button){
 
   // appending childs element to form elements
   editForm.appendChild(formBox);
-  editForm.appendChild(spaceBox);
+  // editForm.appendChild(spaceBox);
   editForm.appendChild(submitForm);
   // console.log(postBox.childNodes)
   // // postBox.insertBefore(editForm, postBox.childNodes[1]);
@@ -74,14 +199,13 @@ function submitEdit(content_id, button){
       console.log('post updated!')
       postSection.innerHTML = formBox.value;
       postSection.style.display = 'block';
-       button.style.display = 'inline';
+      button.style.display = 'inline';
       editForm.remove();
       // send  to server
       send_post(content_id, formBox.value);
-
     // postBox.replaceChild(postBox.childNodes[2], );
-
   }
+
 
 
   return

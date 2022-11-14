@@ -14,11 +14,11 @@ class Following(models.Model):
 
 
 
-    def clean(self):
-        if self.user and self.followers:
-            if self.followers.count() >= 1:
-                if self.followers.filter(username=self.user.username):
-                    raise ValidationError({'user': (f'{self.user.username}, a user cannot follow themself') },code='error1')
+    # def clean(self):
+    #     if self.user and self.followers:
+    #         if self.followers.count() >= 1:
+    #             if self.followers.filter(username=self.user.username):
+    #                 raise ValidationError({'user': (f'{self.user.username}, a user cannot follow themself') },code='error1')
 
 
     def __str__(self):
@@ -34,8 +34,10 @@ class UserPost(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userposts", null=False)
     content = models.TextField(verbose_name="Post", default="", max_length=2048, null=False)
     timestamps = models.DateTimeField(auto_now_add=True)
-    like = models.BooleanField(default=False)
-    likes =  models.IntegerField(default=0)
+    # like = models.BooleanField(default=False)
+    # likes =  models.IntegerField(default=0)
+    user_likes = models.ManyToManyField("User", related_name="liked_posts", null=True)
+
 
 
     def clean(self):
@@ -47,8 +49,8 @@ class UserPost(models.Model):
             "author": self.author.username,
             "content": self.content,
             "timestamps": self.timestamps.strftime("%b %d %Y, %I:%M %p"),
-            "like": self.like,
-            "self": self.likes,
+            "user_likes": self.user_likes.all().count(),
+         
         }
 
     def __str__(self):

@@ -12,7 +12,7 @@ from .models import *
 class Posts(forms.ModelForm):
     class Meta:
         model = UserPost
-        fields = ('author', 'likes', 'like', 'content')
+        fields = ('author', 'user_likes', 'content') 
 
         widgets = { 
                 'content': forms.Textarea(attrs={'class':"form-control ml-1 shadow-none textarea", 'placeholder':"post your thought"}),

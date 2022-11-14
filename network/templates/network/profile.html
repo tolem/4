@@ -5,10 +5,10 @@
 <!-- <h1 > {{ profile_users.username }}  Profile {{ profile_users.pk }}</h1> -->
 {% if user.is_authenticated and user.pk != profile_users.pk %}
 
-<button type="button" class="btn-sm btn-primary rounded-pill rounded-lg " style="border: none;" data-toggle="button" aria-pressed="false">
-    follow
+<button type="button" class="btn-sm btn-primary rounded-pill rounded-lg " id="followBtn" style="border: none;" data-toggle="button" aria-pressed="false" data-username="{{ profile_users.username  }}">   
 </button>
   <p class="h4" style="display:inline;"> {{ profile_users.username }} </p>
+
 
 {% endif %}
 
@@ -28,12 +28,17 @@
   </li>
   <li class="list-group-item d-flex justify-content-between align-items-center">
      followers :
-    <span class="badge badge-primary badge-pill">{{ followers }}</span>
+    <span id="countbadge" class="badge badge-primary badge-pill">{{ followers }}</span>
   </li>
   <li class="list-group-item d-flex justify-content-between align-items-center">
   following:
     <span class="badge badge-primary badge-pill">{{ followed }}</span>
   </li>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+  Tweets liked:
+    <span class="badge badge-primary badge-pill">{{ liked_tweets }}</span>
+  </li>
+
 </ul>
 </div>
 
@@ -44,16 +49,16 @@
 <div id="posts-section">
 	{% for post in posts%}
 	 <div class="card">
-      <div class="card-body {{ post.id }} ">
+      <div class="card-body tweetsdiv" data-tweets="{{ post.id }}">
         <h5 class="card-title"> {{ post.author }}</h5>
 
         {% if user.pk == profile_users.pk %}
-        <a href="#" class="card-link btn-sm btn-primary editBtn"  data-post="{{ post.id }}"  role='button'> Edit </a>
+        <a href="#" class="card-link btn-sm btn-primary editButton"  data-post="{{ post.id }}"  role='button'> Edit </a>
         {% endif %}
         <p class="card-text" id="{{ post.id }}"> {{ post.content }} </p> 
     	<span style=color:grey;> {{ post.timestamps }} </span> <br/>
     	<br/>
-        <span href="#" class="card-link"> <ion-icon name="heart"></ion-icon> </span> <span> {{ post.self }} <br/> Comment</span>
+        <span href="#" class="card-link"> <ion-icon name="heart" id="{{ post.id }}box" aria-pressed="false"></ion-icon></span> <span id="{{ post.id }}post"> {{ post.user_likes }} <br/> Comment</span>
 
       </div>
     </div> 

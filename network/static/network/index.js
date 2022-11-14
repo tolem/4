@@ -1,6 +1,7 @@
 console.log('Hello World!');
 document.addEventListener('DOMContentLoaded', function() {
 	let follow_tag = document.querySelector('#following');
+	document.querySelector('#page-number').innerHTML = '';
 	follow_tag =  (follow_tag && follow_tag.addEventListener('click', (event) =>  load_posts('following')));
 	let allPost = document.querySelector('#all');
 	allPost = allPost && allPost.addEventListener('click', () => load_posts('all'));
@@ -23,8 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	let postForm = (form_tag && form_tag.addEventListener('submit', post_msg));
 
 
+
 	// By default, load all posts
 	load_posts('all');
+
+	// fetch post
+	
+
 
 
 });
@@ -44,11 +50,10 @@ function send_post(id, content){
 }
 
 
-
-function view_post(query){
+function view_post(query, counter){
 	const container = document.querySelector('#posts-section');
 
-	fetch(`/posts/${query}`).then(
+	fetch(`/posts/${query}/posts?page=${counter}`).then(
 		response => response.json()).then(
 		posts => {
 			console.log(posts)
@@ -85,7 +90,7 @@ function view_post(query){
            contentPost.innerHTML = post.content;
            timestamp.innerHTML = `<br/> <span style=color:grey;> ${post.timestamps}</span> <br/>`
            btn.innerHTML = `<ion-icon name="heart"></ion-icon>`;
-           comment.innerHTML = ` ${post.self} <br/> Comment`;
+           comment.innerHTML = ` ${post.user_likes} <br/> Comment`;
 
 
 
@@ -200,6 +205,46 @@ function view_post(query){
 
 }
 
+function pagination (query) {
+    fetch(`/posts/${query}/pages`)
+    .then(response => response.json())
+    .then(result => {
+        if (result.pages > 1) {
+                let counter = 1;
+                let previous = document.getElementsByClassName('page-item')
+                            
+                let next = document.getElementsByClassName('page-item')
+         
+
+                previous.addEventListener('click', function () {
+                    counter--
+                    send_post(counter)
+                    if (counter === 1) {
+                        previous.style.display = 'none'
+                        next.style.display = 'block'
+                    } 
+                    else {
+                        next.style.display = 'block'
+                    }
+                })
+
+                next.addEventListener('click', function () {
+                    counter++
+                    send_post(counter)
+                    if (counter >= result.pages) {
+                        next.style.display = 'none'
+                        previous.style.display = 'block'
+                    } 
+                        next.style.display = 'block'
+                    
+                })
+                    previous.style.display = 'none'
+                    // document.querySelector('#page-number').append(previous)
+                    // document.querySelector('#page-number').append(next)
+
+        }
+    })
+}
 
 function load_posts(userposts) {
 	event.preventDefault();
@@ -226,42 +271,14 @@ function load_posts(userposts) {
   	title = title && (title.innerHTML = `<h1>${userposts.charAt(0).toUpperCase() + userposts.slice(1)} Tweets</h1>`);
 
   // Show all posts
-  view_post(userposts)
+  view_post(userposts, 1);
+  pagination(userposts);
 
   return 
 } 
 
 
 
-
-
-
-// // Shows one page and hides the other two
-// function showPage(page) {
-
-//     // Hide all of the divs:
-//     document.querySelector('#PostForm').forEach(div => {
-//         div.style.display = 'none';
-//     });
-
-//     // Show the div provided in the argument
-//     document.querySelector(`#content`).style.display = 'block';
-//     document.querySelector(`#content`).innerHTML = 'page'; 
-
-// }
-
-// // Wait for page to loaded:
-// document.addEventListener('DOMContentLoaded', function() {
-
-//     // Select all buttons
-//     document.querySelectorAll('.nav-link').forEach(nav => {
-
-//         // When a button is clicked, switch to that page
-//         nav.onclick = function() {
-//             showPage(this.dataset.page);
-//         }
-//     })
-// });
 
 function post_msg(event){
 		
@@ -306,3 +323,9 @@ function updatePost(id, addr){
 }).then(() => load_mailbox(addr));
   
 }
+
+
+
+
+
+

@@ -101,28 +101,15 @@ def commit_posts(request):
 
 
 
-def show_posts(request):
-    # Filter emails returned based on mailbox
+def show_posts(request, endpoint):
+    # Filter post returned based on endpoint
  
     posts = UserPost.objects.all()
     if posts:
-        pass
+        paginator = Paginator(posts, 10)
+        counter = int(request.GET.get("page") or 1)
+        print(paginator)
 
-    # elif userpost.lower() == "following":
-    #     _user = User.objects.get(pk=request.user.pk)
-    #     # followings = _user.followings.all()
-    #     # _followed = _user.followed.all()
-    #     # for f in followings:
-    #     #     print(f.user)
-    #     # print(followings, 'followeds')
-    #     # print(_followed, 'followers')
-    #     # pts = UserPost.objects.all()
-    #     # for u in pts:
-    #     #     print(u.author.userposts)
-    #     # print(pts)
-    #     return JsonResponse(_user.posts, safe=False)
-    
-    #     # return HttpResponse(followings)
     else:
         return JsonResponse({"error": "Invalid posts."}, status=400)
 
@@ -130,32 +117,59 @@ def show_posts(request):
     posts = posts.order_by("-timestamps").all()
     print(posts)
     # print([post.serialize() for post in posts])
-    return JsonResponse([post.serialize() for post in posts], safe=False)
+    if endpoint == "posts":
+        page = paginator.page(counter)
+        set_posts = page.object_list
+
+        return JsonResponse([post.serialize() for post in posts], safe=False)
+
+    elif endpoint == "pages":
+        return JsonResponse({"pages": paginator.num_pages})
+
+    else:
+        return HttpResponse(status=404)
 
 
 
 @login_required
-def show_followings(request):
+def show_followings(request, endpoint):
     try:
         _user = request.user
+        print(_user)
         followed = _user.followings.all()
         followings_list = set()
+        print(followed)
 
         for follow in followed:
+            print(follow, len(follow.user.userposts.all()), 'c')
             # print(follow.user, follow.user.userposts.all())
             if len(follow.user.userposts.all()) > 0:
                 # print(len(follow.user.userposts.all()))
+                followings_list.add(follow.user.userposts.all())
+            else:
                 followings_list.add(follow.user.userposts.all())
 
         sortedlist = list(followings_list.copy())
         print(sortedlist)
         if sortedlist:
             sortedusers =  sortedlist[0]
+            print(type(sortedusers))
             sortedusers = sortedusers.union(*sortedlist).order_by("-timestamps").all()
             print(sortedusers)
-            return JsonResponse([post.serialize() for post in sortedusers], safe=False)
+            paginator = Paginator(sortedusers, 10)
+            counter = int(request.GET.get("page") or 1)
+            if endpoint == "posts":
+                page = paginator.page(counter)
+                set_posts = page.object_list
+                return JsonResponse([post.serialize() for post in sortedusers], safe=False)
 
-        return JsonResponse({"error": "No posts."}, status=400)
+            elif endpoint == "pages":
+                return JsonResponse({"pages": paginator.num_pages})
+
+            else:
+                return HttpResponse(status=404)
+
+        return JsonResponse({"error": "No posts yet."}, status=400)
 
     except User.DoesNotExist:
         return HttpResponseBadRequest("Bad Request: user does not exist")
@@ -172,9 +186,6 @@ def user_profile(request, profile_name):
 
     num_followed = Following.objects.all().filter(followers=profiler.pk)
 
-
-    # print(num_followed)
-    # print((sum([True for n in num_followed])))
     # print(bool(followed))
     # print(Following._meta.get_fields())
 
@@ -188,6 +199,7 @@ def user_profile(request, profile_name):
         'posts': page_obj,
         'followers': list(str(followed).split(' '))[2] if followed else "0",
         'followed': num_followers,
+        'liked_tweets': profiler.liked_posts.all().count(),
         })
 
 
@@ -211,7 +223,7 @@ def show_profile():
 def update_post(request, post_id):
     # Query for requested users
     try:
-        post = UserPost.objects.get(author=request.user, pk=post_id)
+        post = UserPost.objects.get(pk=post_id)
     except UserPost.DoesNotExist:
         return JsonResponse({"error": "Post not found."}, status=404)
 
@@ -222,16 +234,83 @@ def update_post(request, post_id):
     # Update whether post is updated or is liked
     elif request.method == "PUT":
         data = json.loads(request.body)
-        if data.get("like") is not None:
-            post.likes = data["like"]
+        if data.get("liked") is not None:
+            # print(post.author.liked_posts.all(), post.user_likes.all())
+            if post.author.pk != request.user.pk:
+                print("???", post.user_likes.all())
+                post.user_likes.add(request.user)
+                post.save()
+            else:
+                print('user cannot like own posts')
+            # post.likes = data["like"]
         if data.get("content") is not None:
             print("msg")
             post.content = data["content"]
         post.save()
         return HttpResponse(status=204)
 
-    # Post must be via GET or PUT
+
+    elif request.method == "DELETE":
+        # data = json.load(request.body)
+        # if data.get("liked") is not None:
+        post.user_likes.remove(request.user)
+        post.save()
+        return HttpResponse(status=204)
+
+
+    # Post must be via GET or PUT or DELETE
     else:
         return JsonResponse({
-            "error": "GET or PUT request required."
+            "error": "GET or PUT or DELETE request required."
         }, status=400)
+
+
+@csrf_exempt
+def follow(request, username):
+    # Query for requested user
+    try:
+        _user = User.objects.get(username=username)
+        _followigs =  Following.objects.get(user=_user)
+        follow_user = User.objects.get(pk=request.user.pk)
+
+        if request.method == 'PUT':
+            print(username)
+            data = json.loads(request.body)
+            if data.get('follow') is not None:
+                if _user is not None and _user.pk != request.user.pk:
+                    print("jello")              
+                    # if user not in following table, we create new instance
+                    if _user.followed.count() == 0:
+                        follow = Following.objects.create(user=_user)
+                        follow.followers.set([follow_user]) 
+                        follow.save()
+                    else:
+                        print(follow_user)
+                        print(_user.followings.all())
+                        _followigs.followers.add(follow_user) # we add current user to followers
+                  
+                        print(follow_user)
+                        _user.save() # we save it 
+                        print(_user.followings.all())
+                    return HttpResponse(status=204)
+
+
+       
+        elif request.method == "DELETE":
+            data = json.loads(request.body)
+            if data.get('Unfollow') is not None and _user.pk != request.user.pk:
+                _followigs.followers.remove(follow_user) # we remove current user to followers
+                print(_user.followings.all()) 
+                _user.save() #  save table 
+                return HttpResponse(status=204)
+
+
+
+        if request.method == "GET":
+            return JsonResponse({"user":_user.username, "followers": list(str(_user.followed.all()).split(' '))[2] if _user.followed.all() else "0",}, safe=False)
+
+
+
+    except UserPost.DoesNotExist:
+        return JsonResponse({"error": "Post not found."}, status=404)
+
