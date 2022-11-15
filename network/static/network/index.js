@@ -38,6 +38,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+function liked_post(id){
+  fetch(`/posts/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+      liked : id,
+  })
+  
+}).then(()=> {document.getElementById(`${id}`).ariaPressed = 'true'}).then(() => fetch(`/posts/${id}`)).then(response => response.json()).then(res => {console.log(res) 
+          document.getElementById(`comment${id}`).innerHTML = res.user_likes + ' likes';
+        }).catch(err => console.log(err));
+}
+
+function unliked_post(id){
+  fetch(`/posts/${id}`, {
+  method: 'DELETE',
+  body: JSON.stringify({
+      liked : id,
+  })
+  
+}).then(() => {document.getElementById(`${id}`).ariaPressed = 'false'}).then(() => fetch(`/posts/${id}`)).then(response => response.json()).then(res => {console.log(res) 
+          document.getElementById(`comment${id}`).innerHTML = res.user_likes + ' likes';
+        }).catch(err => console.log(err));  
+}
+
+
 function send_post(id, content){
   fetch(`/posts/${id}`, {
   method: 'PUT',
@@ -90,7 +115,7 @@ function view_post(query, counter){
            contentPost.innerHTML = post.content;
            timestamp.innerHTML = `<br/> <span style=color:grey;> ${post.timestamps}</span> <br/>`
            btn.innerHTML = `<ion-icon name="heart"></ion-icon>`;
-           comment.innerHTML = ` ${post.user_likes} <br/> Comment`;
+           comment.innerHTML = ` ${post.user_likes} likes <br/> Comment`;
 
 
 
@@ -99,25 +124,52 @@ function view_post(query, counter){
            editPost.setAttribute('role', 'button');
            header.setAttribute('title', `user profile is ${post.author}`);
            headerLink.setAttribute('href', `http://localhost:8000/profile/${post.author}`);
+           btn.id = post.id;
+           comment.id = `comment${post.id}`;
            headerLink.style.textDecoration = 'none';
            headerLink.style.color = '#808080';
            const authorPost = post.author.toLowerCase();
-           	headerLink.appendChild(header);
+           headerLink.appendChild(header);
      		innerDiv.appendChild(headerLink);
 
      		fetch(`/user`).then(
 			response => response.json()).then( profile => {
-			 if ( profile && profile.user === authorPost){
+
+			if (profile.message){
+				// if user is not signed in remove like button
+				btn.remove();
+			}
+			else if ( profile && profile.user === authorPost){
+				// if current user is author removes like button
 				headerLink.appendChild(editPost);
+				btn.remove();
+
 				}
 			else{
-				console.log(profile.message);
+			btn.onclick = () => {
 
+            	console.log("clicked");
+            	liked_post(Number(post.id));
+            	console.log(btn.ariaPressed);
+          if (btn.ariaPressed === "false"){
+                liked_post(Number(post.id));
+                console.log('false');
+                
+            }
+            else{
+            	  unliked_post(Number(post.id));
+            	  console.log('true');
+            }
+
+            }
+
+
+				console.log(profile.message);
 
 			}
 			}
 		).catch(err=>console.log(err));
-     	
+
            
      		innerDiv.appendChild(contentPost);
      		innerDiv.appendChild(timestamp);
@@ -126,6 +178,7 @@ function view_post(query, counter){
      		innerDiv.appendChild(delimiter);
      		parentDiv.appendChild(innerDiv);
             container.appendChild(parentDiv);
+
 
 
 
@@ -185,8 +238,7 @@ function view_post(query, counter){
   			
 
 
-          // // open email in new view
-          // open_email(email_id);
+      
 
 });
 

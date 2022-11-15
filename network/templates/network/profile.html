@@ -15,7 +15,7 @@
 
 <div><h1> Profile </h1>
 
-    <img src="https://robohash.org/23.238.193.4.png" style="width:20vw; display: inline-block;" class="img-fluid img-thumbnail" alt="Responsive image"/>
+    <img src="https://robohash.org/23.238.193.4.png" style="width:20vw; display: inline-block;" class="img-fluid img-thumbnail rounded-pill" alt="Responsive image"/>
 
 <ul class="list-group"  style="width:20vw; display: inline-block; vertical-align:middle;">
 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -58,7 +58,7 @@
         <p class="card-text" id="{{ post.id }}"> {{ post.content }} </p> 
     	<span style=color:grey;> {{ post.timestamps }} </span> <br/>
     	<br/>
-        <span href="#" class="card-link"> <ion-icon name="heart" id="{{ post.id }}box" aria-pressed="false"></ion-icon></span> <span id="{{ post.id }}post"> {{ post.user_likes }} <br/> Comment</span>
+        <span href="#" class="card-link"> <ion-icon name="heart" id="{{ post.id }}box" aria-pressed="false"></ion-icon></span> <span id="{{ post.id }}post"> {{ post.user_likes }} likes <br/> Comment</span>
 
       </div>
     </div> 

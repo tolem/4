@@ -140,7 +140,7 @@ function liked_post(id){
   })
   
 }).then(()=> {document.getElementById(`${id}box`).ariaPressed = 'true'}).then(() => fetch(`/posts/${id}`)).then(response => response.json()).then(res => {console.log(res) 
-          document.getElementById(`${id}post`).innerHTML = res.user_likes
+          document.getElementById(`${id}post`).innerHTML = res.user_likes + ' likes';
         }).catch(err => console.log(err));
 }
 
@@ -152,7 +152,7 @@ function unliked_post(id){
   })
   
 }).then(() => {document.getElementById(`${id}box`).ariaPressed = 'false'}).then(() => fetch(`/posts/${id}`)).then(response => response.json()).then(res => {console.log(res) 
-          document.getElementById(`${id}post`).innerHTML = res.user_likes
+          document.getElementById(`${id}post`).innerHTML = res.user_likes + ' likes';
         }).catch(err => console.log(err));  
 }
 
@@ -209,6 +209,46 @@ function submitEdit(content_id, button){
 
 
   return
+}
+function pagination (query) {
+    fetch(`/posts/${query}/pages`)
+    .then(response => response.json())
+    .then(result => {
+        if (result.pages > 1) {
+                let counter = 1;
+                let previous = document.getElementsByClassName('page-item')
+                            
+                let next = document.getElementsByClassName('page-item')
+         
+
+                previous.addEventListener('click', function () {
+                    counter--
+                    send_post(counter)
+                    if (counter === 1) {
+                        previous.style.display = 'none'
+                        next.style.display = 'block'
+                    } 
+                    else {
+                        next.style.display = 'block'
+                    }
+                })
+
+                next.addEventListener('click', function () {
+                    counter++
+                    send_post(counter)
+                    if (counter >= result.pages) {
+                        next.style.display = 'none'
+                        previous.style.display = 'block'
+                    } 
+                        next.style.display = 'block'
+                    
+                })
+                    previous.style.display = 'none'
+                    // document.querySelector('#page-number').append(previous)
+                    // document.querySelector('#page-number').append(next)
+
+        }
+    })
 }
 
 

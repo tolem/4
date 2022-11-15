@@ -269,8 +269,18 @@ def update_post(request, post_id):
 def follow(request, username):
     # Query for requested user
     try:
+        print(username)
         _user = User.objects.get(username=username)
-        _followigs =  Following.objects.get(user=_user)
+        if _user.followed.count() == 0:
+            follow = Following.objects.create(user=_user)
+            follow.followers.set([follow_user]) 
+            follow.save()
+            _followigs = follow
+
+        else:
+            _followigs =  Following.objects.get(user=_user)
+
+
         follow_user = User.objects.get(pk=request.user.pk)
 
         if request.method == 'PUT':
