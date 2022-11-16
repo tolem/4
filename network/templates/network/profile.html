@@ -7,7 +7,8 @@
 
 <button type="button" class="btn-sm btn-primary rounded-pill rounded-lg " id="followBtn" style="border: none;" data-toggle="button" aria-pressed="false" data-username="{{ profile_users.username  }}">   
 </button>
-  <p class="h4" style="display:inline;"> {{ profile_users.username }} </p>
+
+  <p class="h4" id="profilename" style="display:inline;"> {{ profile_users.username }} </p>
 
 
 {% endif %}
@@ -20,7 +21,7 @@
 <ul class="list-group"  style="width:20vw; display: inline-block; vertical-align:middle;">
 <li class="list-group-item d-flex justify-content-between align-items-center">
   Name:
-    <span class="text">{{ profile_users.username  }}</span>
+    <span class="text" id="username"> {{ profile_users.username  }}</span>
   </li>
    <li class="list-group-item d-flex justify-content-between align-items-center">
       Joined:
@@ -46,11 +47,13 @@
 
 <h2 id="title_page"> All Tweets by {{ profile_users.username }}</h2>
 
-<div id="posts-section">
+
+
+<div id="posts-section">  
 	{% for post in posts%}
 	 <div class="card">
       <div class="card-body tweetsdiv" data-tweets="{{ post.id }}">
-        <h5 class="card-title"> {{ post.author }}</h5>
+        <h5 class="card-title"> {{ post.author }} </h5>
 
         {% if user.pk == profile_users.pk %}
         <a href="#" class="card-link btn-sm btn-primary editButton"  data-post="{{ post.id }}"  role='button'> Edit </a>
@@ -66,25 +69,27 @@
     No Post yet
 	{% endfor %}
 </div>
+  
 
-{% endblock %}
-
-
-{% block footer %}
-<nav aria-label="Page navigation example">
-  <ul class="pagination justify-content-center">
-    <li class="page-item ">
-      <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+  <nav aria-label="Page navigation example">
+  <ul class="pagination justify-content-center" id="page-number">
+    <li class="page-item" >
+      <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Prev</a>
     </li>
-<!--     <li class="page-item"><a class="page-link" href="#">1</a></li>
-    <li class="page-item"><a class="page-link" href="#">2</a></li>
-    <li class="page-item"><a class="page-link" href="#">3</a></li> -->
-    <li class="page-item">
+    <li class="page-item"> 
       <a class="page-link" href="#">Next</a>
     </li>
   </ul>
 </nav>
 {% endblock %}
+
+
+{% block footer %}
+
+<footer>{{profile_users.username}} Profile Page </footer>
+
+{% endblock %}
+
 {% block script %}
     <script src="{% static 'network/profile.js' %}"> </script>
 {% endblock %}

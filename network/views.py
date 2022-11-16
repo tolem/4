@@ -106,22 +106,21 @@ def show_posts(request, endpoint):
  
     posts = UserPost.objects.all()
     if posts:
+            # Return posts in reverse chronologial order
+        posts = posts.order_by("-timestamps").all()
         paginator = Paginator(posts, 10)
         counter = int(request.GET.get("page") or 1)
         print(paginator)
 
+
     else:
         return JsonResponse({"error": "Invalid posts."}, status=400)
-
-    # Return posts in reverse chronologial order
-    posts = posts.order_by("-timestamps").all()
-    print(posts)
-    # print([post.serialize() for post in posts])
+        
     if endpoint == "posts":
         page = paginator.page(counter)
         set_posts = page.object_list
 
-        return JsonResponse([post.serialize() for post in posts], safe=False)
+        return JsonResponse([post.serialize() for post in set_posts], safe=False)
 
     elif endpoint == "pages":
         return JsonResponse({"pages": paginator.num_pages})
@@ -161,7 +160,7 @@ def show_followings(request, endpoint):
             if endpoint == "posts":
                 page = paginator.page(counter)
                 set_posts = page.object_list
-                return JsonResponse([post.serialize() for post in sortedusers], safe=False)
+                return JsonResponse([post.serialize() for post in set_posts], safe=False)
 
             elif endpoint == "pages":
                 return JsonResponse({"pages": paginator.num_pages})
@@ -323,4 +322,48 @@ def follow(request, username):
 
     except UserPost.DoesNotExist:
         return JsonResponse({"error": "Post not found."}, status=404)
+
+
+
+def profile_update(request, username, endpoint):
+    profiler = User.objects.get(username=username)
+    print(User._meta.get_fields())
+    profile_posts = profiler.userposts.all()
+    profile_posts = profile_posts.order_by("-timestamps").all()
+    profile_posts = [post.serialize() for post in profile_posts]
+    followed = profiler.followed.all()
+    followers = profiler.followings.all()
+    num_followed = Following.objects.all().filter(followers=profiler.pk)
+
+
+    num_followers = sum([True for name in followers])
+    paginator = Paginator(profile_posts, 10) # Show 10 post per page.
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    counter = int(request.GET.get("page") or 1)
+
+
+    print(page_obj.has_next())
+
+    if endpoint == "post":
+        page = paginator.page(counter)
+        set_posts = page.object_list
+        print(set_posts)
+        set_posts = [post for post in set_posts]
+        return JsonResponse(set_posts, safe=False)
+
+    elif endpoint == "pages":
+        return JsonResponse({"pages": paginator.num_pages})
+
+    else:
+        return HttpResponse(status=404)
+
+
+
+
+
+
+
+
+
 

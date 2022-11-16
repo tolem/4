@@ -1,7 +1,6 @@
 console.log('Hello World!');
 document.addEventListener('DOMContentLoaded', function() {
 	let follow_tag = document.querySelector('#following');
-	document.querySelector('#page-number').innerHTML = '';
 	follow_tag =  (follow_tag && follow_tag.addEventListener('click', (event) =>  load_posts('following')));
 	let allPost = document.querySelector('#all');
 	allPost = allPost && allPost.addEventListener('click', () => load_posts('all'));
@@ -76,7 +75,13 @@ function send_post(id, content){
 
 
 function view_post(query, counter){
-	const container = document.querySelector('#posts-section');
+	console.log(counter);
+	let container = document.querySelector('#posts-section');
+	if (counter > 1){
+		container.innerHTML = "";
+		console.log(container, 'done');
+	}
+	
 
 	fetch(`/posts/${query}/posts?page=${counter}`).then(
 		response => response.json()).then(
@@ -87,6 +92,7 @@ function view_post(query, counter){
 		} else{
 
 			posts.forEach( post => { 
+
 		
 			const parentDiv = document.createElement('div');
            	const innerDiv =  document.createElement('div');
@@ -130,7 +136,7 @@ function view_post(query, counter){
            headerLink.style.color = '#808080';
            const authorPost = post.author.toLowerCase();
            headerLink.appendChild(header);
-     		innerDiv.appendChild(headerLink);
+     	   innerDiv.appendChild(headerLink);
 
      		fetch(`/user`).then(
 			response => response.json()).then( profile => {
@@ -263,36 +269,45 @@ function pagination (query) {
     .then(result => {
         if (result.pages > 1) {
                 let counter = 1;
-                let previous = document.getElementsByClassName('page-item')
+                let previous = document.getElementsByClassName('page-item');
+                console.log(previous);
                             
                 let next = document.getElementsByClassName('page-item')
          
 
-                previous.addEventListener('click', function () {
+                previous[0].addEventListener('click', function () {
                     counter--
-                    send_post(counter)
+                   view_post(query, counter)
                     if (counter === 1) {
-                        previous.style.display = 'none'
-                        next.style.display = 'block'
+                        previous[0].style.display = 'none';
+                        next[1].style.display = 'block';
                     } 
                     else {
-                        next.style.display = 'block'
+                        next[1].style.display = 'block';
                     }
-                })
+                });
 
-                next.addEventListener('click', function () {
+                next[1].addEventListener('click', function () {
                     counter++
-                    send_post(counter)
+                    const container = document.querySelector('#posts-section');
+                    container.innerHTML = "";
+                    view_post(query, counter)
                     if (counter >= result.pages) {
-                        next.style.display = 'none'
-                        previous.style.display = 'block'
+                        next[1].style.display = 'none'
+                        previous[0].style.display = 'block'
                     } 
-                        next.style.display = 'block'
+                        next[1].style.display = 'block'
+                        console.log(counter, result.pages)
+
+                        if (result.pages === counter){
+                        	next[1].style.display = 'none';
+                        }
+
                     
                 })
-                    previous.style.display = 'none'
-                    // document.querySelector('#page-number').append(previous)
-                    // document.querySelector('#page-number').append(next)
+                    previous[0].style.display = 'none'
+                    // document.querySelector('#page-number').append(previous);
+                    // document.querySelector('#page-number').append(next);
 
         }
     })
@@ -314,6 +329,9 @@ function load_posts(userposts) {
 
 	 	let userform =  document.querySelector("#post-form");
 	 	userform = userform && (userform.style.display = 'block');
+	 	const container = document.querySelector('#posts-section');
+
+
 	 }
 
 
@@ -365,16 +383,7 @@ function post_msg(event){
 
 
 
-function updatePost(id, addr){
-  fetch(`/posts/${id}`, {
-  method: 'PUT',
-  body: JSON.stringify({
-      archived: !(bol)
-  })
-  
-}).then(() => load_mailbox(addr));
-  
-}
+
 
 
 
