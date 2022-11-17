@@ -1,9 +1,9 @@
 console.log('Hello World!');
 document.addEventListener('DOMContentLoaded', function() {
 	let follow_tag = document.querySelector('#following');
-	follow_tag =  (follow_tag && follow_tag.addEventListener('click', (event) =>  load_posts('following')));
+	follow_tag =  (follow_tag && follow_tag.addEventListener('click', (event) =>  load_posts('following', 1)));
 	let allPost = document.querySelector('#all');
-	allPost = allPost && allPost.addEventListener('click', () => load_posts('all'));
+	allPost = allPost && allPost.addEventListener('click', () => load_posts('all', 1));
 	let form_tag = document.querySelector('#post-form');
 	let sub_btn = document.querySelector('#post-btn');
 	sub_btn = (sub_btn && (sub_btn.disabled = true));
@@ -19,18 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	}
 
-
 	let postForm = (form_tag && form_tag.addEventListener('submit', post_msg));
 
 
-
 	// By default, load all posts
-	load_posts('all');
-
-	// fetch post
-	
-
-
+	load_posts('all', 1);
 
 });
 
@@ -75,18 +68,25 @@ function send_post(id, content){
 
 
 function view_post(query, counter){
-	console.log(counter);
+	console.log(query ,counter);
+	if (query == "all" && document.getElementById('title_page') == 'Following tweets'){
+		console.log('pass');
+	}
+	else 
+	{ 
 	let container = document.querySelector('#posts-section');
-	if (counter > 1){
+	if (Number(counter) > 1){
 		container.innerHTML = "";
-		console.log(container, 'done');
+		console.log(query, 'done');
+
 	}
 	
 
 	fetch(`/posts/${query}/posts?page=${counter}`).then(
+
 		response => response.json()).then(
 		posts => {
-			console.log(posts)
+		console.log(posts)
 		if (posts.error === "No posts."){
 			container.innerHTML = "No post";
 		} else{
@@ -106,9 +106,6 @@ function view_post(query, counter){
            	const timestamp = document.createElement('span');
 
 
-
-
-           // const archive_btn = document.createElement('button');
 
            parentDiv.classList.add("card", "post_toggle");
            innerDiv.classList.add("card-body");
@@ -173,7 +170,7 @@ function view_post(query, counter){
 				console.log(profile.message);
 
 			}
-			}
+			 }
 		).catch(err=>console.log(err));
 
            
@@ -184,12 +181,6 @@ function view_post(query, counter){
      		innerDiv.appendChild(delimiter);
      		parentDiv.appendChild(innerDiv);
             container.appendChild(parentDiv);
-
-
-
-
-
-
            
 
 
@@ -243,14 +234,9 @@ function view_post(query, counter){
   }
   			
 
-
       
 
 });
-
-
-
-
 
 
        }
@@ -259,25 +245,32 @@ function view_post(query, counter){
 				);
 		}
 		}
-		).catch(err=>console.log(err));
+		).catch(err=>console.log(err));}
 
 }
 
 function pagination (query) {
+
     fetch(`/posts/${query}/pages`)
     .then(response => response.json())
     .then(result => {
         if (result.pages > 1) {
+        	console.log(result.pages, query);
                 let counter = 1;
                 let previous = document.getElementsByClassName('page-item');
                 console.log(previous);
                             
-                let next = document.getElementsByClassName('page-item')
+                let next = document.getElementsByClassName('page-item');
+                const postQuery = document.getElementById('title_page').innerText.substring(0,  document.getElementById('title_page').innerText.indexOf(' ')).toLowerCase();;
+               
+
          
 
                 previous[0].addEventListener('click', function () {
                     counter--
-                   view_post(query, counter)
+            	 document.querySelector('#posts-section').innerHTML = '';
+            		
+                   view_post(postQuery, counter)
                     if (counter === 1) {
                         previous[0].style.display = 'none';
                         next[1].style.display = 'block';
@@ -288,16 +281,16 @@ function pagination (query) {
                 });
 
                 next[1].addEventListener('click', function () {
+                	console.log(postQuery);
                     counter++
-                    const container = document.querySelector('#posts-section');
-                    container.innerHTML = "";
-                    view_post(query, counter)
+         
+                    view_post(postQuery, counter)
                     if (counter >= result.pages) {
-                        next[1].style.display = 'none'
-                        previous[0].style.display = 'block'
+                        next[1].style.display = 'none';
+                        previous[0].style.display = 'block';
                     } 
-                        next[1].style.display = 'block'
-                        console.log(counter, result.pages)
+                        next[1].style.display = 'block';
+                        console.log(counter, result.pages);
 
                         if (result.pages === counter){
                         	next[1].style.display = 'none';
@@ -305,16 +298,14 @@ function pagination (query) {
 
                     
                 })
-                    previous[0].style.display = 'none'
-                    // document.querySelector('#page-number').append(previous);
-                    // document.querySelector('#page-number').append(next);
+                    previous[0].style.display = 'none';
 
         }
     })
 }
 
-function load_posts(userposts) {
-	event.preventDefault();
+function load_posts(userposts, counter) {
+
 	const div_isactive = document.querySelectorAll('.post_toggle');
 	// checks if div is DOM and update removes element
 	  if (div_isactive !== null){
@@ -329,8 +320,6 @@ function load_posts(userposts) {
 
 	 	let userform =  document.querySelector("#post-form");
 	 	userform = userform && (userform.style.display = 'block');
-	 	const container = document.querySelector('#posts-section');
-
 
 	 }
 
@@ -340,8 +329,9 @@ function load_posts(userposts) {
 
   	title = title && (title.innerHTML = `<h1>${userposts.charAt(0).toUpperCase() + userposts.slice(1)} Tweets</h1>`);
 
-  // Show all posts
-  view_post(userposts, 1);
+  // load posts
+  console.log(userposts);
+  view_post(userposts, counter);
   pagination(userposts);
 
   return 
@@ -350,10 +340,8 @@ function load_posts(userposts) {
 
 
 
-function post_msg(event){
-		
-	event.preventDefault()
-	// alert('Hello')
+function post_msg(event){	
+	event.preventDefault();
 	let content =  document.querySelector('#PostBox').value;
 	console.log('Lami', 'TODO', content);
   
@@ -371,22 +359,11 @@ function post_msg(event){
 	      document.querySelector('#PostBox').value = '';
 	      document.querySelector('#post-btn').disabled = true;
 
-	     
+	     // loads DOM when user sends Posts
+	     load_posts('all', 1);
          	    
 	      
 	  });
-	  load_posts('all');
-
+	 
 	  return 
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -182,12 +182,7 @@ def user_profile(request, profile_name):
     profile_posts = [post.serialize() for post in profile_posts]
     followed = profiler.followed.all()
     followers = profiler.followings.all()
-
     num_followed = Following.objects.all().filter(followers=profiler.pk)
-
-    # print(bool(followed))
-    # print(Following._meta.get_fields())
-
     num_followers = sum([True for name in followers])
     paginator = Paginator(profile_posts, 10) # Show 10 post per page.
     page_number = request.GET.get('page')
@@ -210,11 +205,6 @@ def get_user(request):
 
     except User.DoesNotExist:
         return HttpResponseRedirect(reverse("index"))
-
-
-def show_profile():
-    pass
-
 
 
 @csrf_exempt

@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded',() => {
                   const postID = Number(this.dataset.post);
                   button.style.display = 'none';
                   submitEdit(postID, button);
-                  console.log("Hello");
                 }
 
 
@@ -92,8 +91,6 @@ function follow(username, state){
     let counter = document.getElementById('countbadge')
     counter = counter && (counter.innerHTML = res.followers); 
     let curr_state = document.getElementById("followBtn");
-    // curr_state.ariaPressed = "false";
-    // console.log(!curr_state, 'check', (eval(curr_state)));
     curr_state.innerHTML = "UnFollow";
     console.log(res, curr_state.innerHTML); 
   });
@@ -493,5 +490,3 @@ function pagination (query) {
         }
     })
 }
-
-

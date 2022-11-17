@@ -19,9 +19,4 @@ urlpatterns = [
     path("user", views.get_user, name="user_info"),
     path("follow/<str:username>", views.follow, name="follow"),
     path("profilepost/<str:username>/<str:endpoint>", views.profile_update, name="update"),
-
-
-    # path("tweets/<str:endpoint>", views.posts, name="posts")
-
-
 ]
